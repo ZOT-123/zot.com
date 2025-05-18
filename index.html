@@ -1,0 +1,277 @@
+<!-- 清华大学开源镜像站风格下载站 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZOT开源软件镜像下载站</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f6fa;
+            color: #222;
+        }
+        .navbar {
+            background: #2176d2;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            height: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .navbar img {
+            height: 28px;
+            margin-right: 16px;
+        }
+        .navbar .title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .navbar .menu {
+            margin-left: auto;
+            display: flex;
+            gap: 24px;
+        }
+        .navbar .menu a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+        .navbar .menu a:hover {
+            opacity: 0.7;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 32px 24px 24px 24px;
+        }
+        .main-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2176d2;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 32px;
+        }
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+        .search-box input {
+            width: 320px;
+            padding: 10px 16px;
+            border: 1px solid #d0d7de;
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-box button {
+            padding: 10px 20px;
+            border: none;
+            background: #2176d2;
+            color: #fff;
+            font-size: 1rem;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .search-box button:hover {
+            background: #185a9d;
+        }
+        .download-list {
+            margin-top: 16px;
+        }
+        .download-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .download-item:last-child {
+            border-bottom: none;
+        }
+        .download-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .download-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2176d2;
+        }
+        .download-desc {
+            color: #888;
+            font-size: 0.95rem;
+        }
+        .download-link {
+            background: #2176d2;
+            color: #fff;
+            padding: 7px 18px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .download-link:hover {
+            background: #185a9d;
+        }
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 0.95rem;
+            margin: 40px 0 16px 0;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 16px 4px; }
+            .main-title { font-size: 1.3rem; }
+            .search-box input { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <img src="images/logo.png" alt="Logo">
+        <span class="title">开源软件镜像下载站</span>
+        <div class="menu">
+            <a href="#">首页</a>
+            <a href="#">镜像列表</a>
+            <a href="#">帮助</a>
+            <a href="#">关于</a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="main-title">ZOT开源软件镜像下载站</div>
+        <div class="subtitle">为开发者和用户提供高速、稳定的开源软件镜像下载服务</div>
+        <form class="search-box" onsubmit="return false;">
+            <input type="text" placeholder="搜索软件/项目..." id="searchInput">
+            <button type="submit" onclick="searchList()">搜索</button>
+        </form>
+        <div class="download-list" id="downloadList">
+            <!-- 下载项将由 JS 动态生成 -->
+        </div>
+    </div>
+    <div class="footer">
+        © 2025 ZOT开源软件镜像下载站 | 仅供学习交流
+    </div>
+    <!-- 关于模态框 -->
+    <div id="aboutModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);">
+        <div style="background:#fff;max-width:420px;margin:80px auto;padding:32px 24px 20px 24px;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.13);position:relative;">
+            <div style="font-size:1.3rem;font-weight:600;color:#2176d2;margin-bottom:12px;">关于本站</div>
+            <div style="color:#444;font-size:1rem;line-height:1.8;margin-bottom:18px;">
+                本站致力于为开发者和用户提供高速、稳定的开源软件镜像下载服务。<br>
+                <br>
+                <b>主要功能：</b><br>
+                - 提供主流开源软件镜像下载<br>
+                - 支持搜索与分类浏览<br>
+                - 简洁美观，响应式设计<br>
+                <br>
+                <b>联系方式：</b><br>
+                邮箱：example@mail.com<br>
+                <br>
+                <b>免责声明：</b><br>
+                本站仅供学习交流，所有资源均来自互联网，如有侵权请联系删除。
+            </div>
+            <button onclick="closeAbout()" style="position:absolute;right:18px;top:14px;background:none;border:none;font-size:1.3rem;color:#888;cursor:pointer;">×</button>
+            <div style="text-align:right;margin-top:8px;">
+                <button onclick="closeAbout()" style="background:#2176d2;color:#fff;border:none;padding:7px 22px;border-radius:4px;font-size:1rem;cursor:pointer;">关闭</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 启动时预加载所有资源文件，防止首次访问延迟
+        const preloadFiles = [
+            './css/flies.json',
+            './images/logo.png',
+            './images/123.png'
+        ];
+        preloadFiles.forEach(url => {
+            fetch(url).catch(()=>{});
+        });
+        function searchList() {
+            var input = document.getElementById('searchInput').value.toLowerCase();
+            var items = document.querySelectorAll('.download-item');
+            items.forEach(function(item) {
+                var title = item.querySelector('.download-title').textContent.toLowerCase();
+                var desc = item.querySelector('.download-desc').textContent.toLowerCase();
+                if (title.includes(input) || desc.includes(input)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        // 动态加载下载列表
+        fetch('./css/flies.json?_t=' + Date.now())
+            .then(res => res.text())
+            .then(text => {
+                const json = text.replace(/^[^\[]*/, '');
+                let list = [];
+                try {
+                    list = JSON.parse(json);
+                } catch (e) {
+                    document.getElementById('downloadList').innerHTML = '<div style="color:#e74c3c;text-align:center;padding:32px 0;">下载列表解析失败</div>';
+                    return;
+                }
+                if (!Array.isArray(list) || !list.length) return document.getElementById('downloadList').innerHTML = '<div style="color:#888;text-align:center;padding:32px 0;">暂无可用下载项</div>';
+                document.getElementById('downloadList').innerHTML = list.map(item =>
+                    `<div class='download-item'>
+                        <div class='download-info'>
+                            <span class='download-title'>${item.title}</span>
+                            <span class='download-desc'>${item.desc}</span>
+                        </div>
+                        <a class='download-link' href='${item.url}' target='_blank'>下载</a>
+                    </div>`
+                ).join('');
+            })
+            .catch(() => {
+                // fetch 失败时尝试用 script 标签加载 flies.json
+                var script = document.createElement('script');
+                script.src = './css/flies.js';
+                script.onload = function() {
+                    if (window.flies && Array.isArray(window.flies)) {
+                        document.getElementById('downloadList').innerHTML = window.flies.map(item =>
+                            `<div class='download-item'>
+                                <div class='download-info'>
+                                    <span class='download-title'>${item.title}</span>
+                                    <span class='download-desc'>${item.desc}</span>
+                                </div>
+                                <a class='download-link' href='${item.url}' target='_blank'>下载</a>
+                            </div>`
+                        ).join('');
+                    } else {
+                        document.getElementById('downloadList').innerHTML = '<div style="color:#e74c3c;text-align:center;padding:32px 0;">下载列表加载失败</div>';
+                    }
+                };
+                script.onerror = function() {
+                    document.getElementById('downloadList').innerHTML = '<div style="color:#e74c3c;text-align:center;padding:32px 0;">下载列表加载失败</div>';
+                };
+                document.body.appendChild(script);
+            });
+        // 关于弹窗相关
+        document.querySelectorAll('.navbar .menu a').forEach(function(a){
+            if(a.textContent.includes('关于')){
+                a.onclick = function(e){
+                    e.preventDefault();
+                    document.getElementById('aboutModal').style.display = 'block';
+                }
+            }
+        });
+        function closeAbout(){
+            document.getElementById('aboutModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

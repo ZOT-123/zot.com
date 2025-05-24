@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帮助 - ZOT开源软件镜像下载站</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+      background: #f5f6fa;
+      color: #222;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      z-index: -1;
+      background: url('../images/123.png') no-repeat center center fixed;
+      background-size: cover;
+      opacity: 0.35;
+    }
+    .navbar {
+      background: rgba(255,255,255,0.4);
+      color: #222;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      height: 60px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .navbar img {
+      max-height: 52px;
+      max-width: 120px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin-right: 16px;
+    }
+    .navbar .title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transform:translateX(-5px);
+    }
+    .navbar .menu {
+      margin-left: auto;
+      display: flex;
+      gap: 24px;
+    }
+    .navbar .menu a {
+      color: #222;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: opacity 0.2s;
+      font-weight: normal;
+    }
+    .navbar .menu a:hover {
+      opacity: 0.7;
+    }
+    .help-container {
+      max-width: 720px;
+      margin: 60px auto 0 auto;
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 40px 32px 32px 32px;
+    }
+    .help-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #4be39a;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .help-content {
+      color: #3f3f3f;
+      font-size: 1.08rem;
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+    .help-content ul {
+      margin: 0 0 18px 1.2em;
+      padding: 0;
+    }
+    .help-content li {
+      margin-bottom: 8px;
+    }
+    .footer {
+      text-align: center;
+      color: #888;
+      font-size: 0.95rem;
+      margin: 40px 0 16px 0;
+    }
+    @media (max-width: 600px) {
+      .help-container {
+        padding: 16px 4vw 16px 4vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <img src="../images/logo.png" alt="Logo" style="max-height:52px;max-width:120px;width:auto;height:auto;object-fit:contain;display:block;margin-right:16px;">
+    <span class="title" style="transform:translateX(-5px);">开源软件镜像下载站</span>
+    <div class="menu">
+      <a href="../index.html">首页</a>
+      <a href="mirrorlist.html">镜像列表</a>
+      <a href="help.html">帮助</a>
+      <a href="about.html">关于</a>
+    </div>
+  </div>
+  <div class="help-container">
+    <div class="help-title">帮助中心</div>
+    <div class="help-content">
+      <b>1. 如何查找和下载软件？</b><br>
+      - 在首页顶部可通过“搜索”输入关键词快速查找所需软件。<br>
+      - 也可通过“Windows”、“Linux”、“Android”分类标签浏览不同平台的软件列表。<br>
+      - 点击“Download”按钮，阅读并同意相关协议后即可跳转下载。
+      <br><br>
+      <b>2. 下载速度慢/失败怎么办？</b><br>
+      - 建议切换网络环境或使用科学上网工具。<br>
+      - 检查本地防火墙、代理设置是否影响访问。<br>
+      - 如多次失败请反馈给我们。
+      <br><br>
+      <b>3. 免责声明与协议</b><br>
+      - 所有资源仅供学习交流，严禁用于商业用途。<br>
+      - 下载前请务必阅读并同意 <a href="../css/disclaimer.html" target="_blank" style="color:#6ec1e4;text-decoration:underline;">免责声明</a> 和 <a href="../css/nda.html" target="_blank" style="color:#6ec1e4;text-decoration:underline;">保密协议</a>。
+      <br><br>
+      <b>4. 联系与反馈</b><br>
+      - 邮箱：hjl1357275420@hotmail.com<br>
+      - 欢迎提出建议、反馈问题，共同完善平台。
+    </div>
+  </div>
+  <div class="footer">
+    © 2024-2025 ZOT开源软件镜像下载站 | zero organisation team | 字节跳动 | 仅供学习交流
+  </div>
+</body>
+</html>

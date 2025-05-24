@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>镜像列表 - ZOT开源软件镜像下载站</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+      background: #f5f6fa; /* 页面主背景色 */
+      color: #222; /* 主字体颜色 */
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      z-index: -1;
+      background: url('../images/123.png') no-repeat center center fixed;
+      background-size: cover;
+      opacity: 0.35; /* 背景图片透明度 */
+    }
+    .navbar {
+      background: rgba(255,255,255,0.4); /* 顶部导航栏半透明白色背景 */
+      color: #222; /* 导航栏字体颜色 */
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      height: 60px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .navbar img {
+      max-height: 52px;
+      max-width: 120px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin-right: 16px;
+    }
+    .navbar .title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transform:translateX(-5px);
+    }
+    .navbar .menu {
+      margin-left: auto;
+      display: flex;
+      gap: 24px;
+    }
+    .navbar .menu a {
+      color: #222; /* 导航链接字体颜色 */
+      text-decoration: none;
+      font-size: 1rem;
+      transition: opacity 0.2s;
+      font-weight: normal;
+    }
+    .navbar .menu a:hover {
+      opacity: 0.7; /* 悬停时透明度 */
+    }
+    .mirrorlist-container {
+      max-width: 820px;
+      margin: 60px auto 0 auto;
+      background: rgba(255,255,255,0.95); /* 内容区白色半透明背景 */
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 40px 32px 32px 32px;
+    }
+    .mirrorlist-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #4be39a; /* 标题主色：绿色 */
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .mirrorlist-content {
+      color: #3f3f3f; /* 内容区字体浅灰色 */
+      font-size: 1.08rem;
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+    .mirror-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      background: #fff; /* 表格背景白色 */
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .mirror-table th, .mirror-table td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0; /* 表格分隔线浅灰色 */
+      color: inherit; /* 继承字体颜色 */
+      font-size: 1rem;
+    }
+    .mirror-table th {
+      background: #f8fafd; /* 表头背景淡蓝色 */
+      color: #6ec1e4; /* 表头字体主色：蓝色 */
+      font-weight: 600;
+    }
+    .mirror-table tr:last-child td {
+      border-bottom: none;
+    }
+    .download-btn {
+      background: transparent; /* 按钮背景透明 */
+      color: #4be39a; /* 按钮主色：绿色 */
+      border: 1px solid #4be39a; /* 按钮边框绿色 */
+      border-radius: 8px;
+      padding: 6px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .download-btn:hover {
+      background: #4be39a; /* 悬停时按钮绿色背景 */
+      color: #fff; /* 悬停时按钮字体白色 */
+    }
+    .footer {
+      text-align: center;
+      color: #888; /* 页脚字体灰色 */
+      font-size: 0.95rem;
+      margin: 40px 0 16px 0;
+    }
+    @media (max-width: 600px) {
+      .mirrorlist-container {
+        padding: 16px 4vw 16px 4vw;
+      }
+      .mirror-table th, .mirror-table td {
+        font-size: 0.98rem;
+        padding: 8px 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <img src="../images/logo.png" alt="Logo" style="max-height:52px;max-width:120px;width:auto;height:auto;object-fit:contain;display:block;margin-right:16px;">
+    <span class="title" style="transform:translateX(-5px);">开源软件镜像下载站</span>
+    <div class="menu">
+      <a href="../index.html">首页</a>
+      <a href="../res/mirrorlist.html">镜像列表</a>
+      <a href="../res/help.html">帮助</a>
+      <a href="../res/about.html">关于</a>
+    </div>
+  </div>
+  <div class="mirrorlist-container">
+    <div class="mirrorlist-title">镜像列表下载专栏</div>
+    <div class="mirrorlist-content">
+      本专栏收录了本站提供的主流开源软件镜像，支持多平台高速下载。点击下方“下载”按钮可直接获取对应资源。
+    </div>
+    <table class="mirror-table">
+      <thead>
+        <tr>
+          <th>软件名称</th>
+          <th>简介</th>
+          <th>平台</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="mirrorTableBody">
+        <!-- 动态填充 -->
+      </tbody>
+    </table>
+  </div>
+  <div class="footer">
+    © 2024-2025 ZOT开源软件镜像下载站 | zero organisation team | 字节跳动 | 仅供学习交流
+  </div>
+  <script src="../css/mirrorlinks.js"></script>
+  <script>
+    // 渲染镜像表格
+    function renderMirrorTable() {
+      // 优先使用 window.flies，其次 window.mirrorLinks
+      var data = window.flies || window.mirrorLinks;
+      if(!data) return;
+      const tabMap = {windows:'Windows',linux:'Linux',android:'Android'};
+      let html = '';
+      Object.keys(tabMap).forEach(tab => {
+        (data[tab]||[]).forEach(item => {
+          html += `<tr>
+            <td>${item.title||item.name||''}</td>
+            <td>${item.desc||''}</td>
+            <td>${tabMap[tab]}</td>
+            <td><a class='download-btn' href='${item.url}' target='${item.target||'_blank'}' rel='noopener noreferrer'>下载</a></td>
+          </tr>`;
+        });
+      });
+      document.getElementById('mirrorTableBody').innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:#aaa;">暂无数据</td></tr>';
+    }
+    if(window.flies || window.mirrorLinks){renderMirrorTable();}
+    else{
+      window.addEventListener('DOMContentLoaded',renderMirrorTable);
+    }
+  </script>
+</body>
+</html>

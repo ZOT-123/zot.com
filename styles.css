@@ -9,7 +9,8 @@ html,body{height:100%}
 body{
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   color: #1e293b; /* 深灰色文本 */
-  background: linear-gradient(120deg, var(--bg1), var(--bg2)); /* 浅色背景渐变 */
+  /* 使用壁纸图片作为背景，并在上方叠加半透明渐变以保证文字对比 */
+  background: linear-gradient(120deg, rgba(248,250,252,0.65), rgba(226,232,240,0.65)), url('assests/wall.svg') center/cover no-repeat;
   overflow:hidden;
   -webkit-font-smoothing:antialiased;
 }
@@ -89,3 +90,12 @@ body.loaded .content{opacity:1;transform:none}
   *{animation:none!important;transition:none!important}
   body::before{display:none}
 }
+
+/* 动画工具类：淡入上移 */
+.fade-up{animation:fadeUp .56s cubic-bezier(.2,.9,.3,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 按钮与卡片微交互 */
+.card, .refresh-btn, .floatbtn{transition:transform .18s ease, box-shadow .18s ease}
+.card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(2,6,23,0.12)}
+.refresh-btn:active, .floatbtn:active{transform:translateY(0) scale(.98)}

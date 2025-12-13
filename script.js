@@ -19,15 +19,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   const maxWait = 3000;
   const t = setTimeout(finish, maxWait);
 
-  // 允许用户点击跳过
-  loader.addEventListener('click',()=>{ clearTimeout(t); finish(); });
+  // 允许用户点击跳过（如果存在 loader）
+  if (loader) {
+    loader.addEventListener('click',()=>{ clearTimeout(t); finish(); });
 
-  // 当 hi 文本的动画结束，触发完成（更自然）
-  const hi = loader.querySelector('.hi');
-  if(hi){
-    hi.addEventListener('animationend',()=>{ clearTimeout(t); setTimeout(finish,700); });
+    // 当 hi 文本的动画结束，触发完成（更自然）
+    const hi = loader.querySelector('.hi');
+    if(hi){
+      hi.addEventListener('animationend',()=>{ clearTimeout(t); setTimeout(finish,700); });
+    } else {
+      // fallback
+      setTimeout(()=>{ clearTimeout(t); finish(); },1200);
+    }
   } else {
-    // fallback
-    setTimeout(()=>{ clearTimeout(t); finish(); },1200);
+    // 如果没有 loader 元素，也应在超时后执行 finish
+    // （上面的 setTimeout(t) 已经保证会调用 finish）
   }
 });

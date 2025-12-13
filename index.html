@@ -209,7 +209,8 @@
       inset: 0;
       display: grid;
       place-items: center;
-      background: rgba(255,255,255,0.95);
+      /* 纯白不透明背景，保证加载界面为白底 */
+      background: #ffffff;
       z-index: 9999;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
@@ -221,9 +222,13 @@
       display: block;
       object-fit: contain;
       border-radius: 8px;
+      /* 居中：不做横向偏移，使用容器的 place-items:center 保证水平垂直居中 */
+      transform: none;
+      transition: transform 300ms ease;
     }
     @media (max-width: 480px) {
-      #welcome img { max-width: 84vw; }
+      /* 移动端同样不偏移，保持居中 */
+      #welcome img { max-width: 84vw; transform: none; }
     }
 
     /* 小屏幕微调 */
@@ -239,11 +244,11 @@
 <body>
   <!-- 新增：欢迎图片覆盖层（点击任意处或图片关闭） -->
   <div id="welcome" role="dialog" aria-label="欢迎" aria-hidden="false">
-    <img src="hello.png" alt="欢迎">
+    <img src="assests/hello.svg" alt="欢迎" loading="lazy" onerror="this.onerror=null;this.src='assests/placeholder.svg';">
   </div>
 
   <header class="site-header">
-    <div class="brand">高2024级1班</div>
+    <div class="brand">高2024级1班 官方网站</div>
 
     <!-- 新增：刷新按钮（放在 header 右侧） -->
     <div style="margin-left:auto; padding-right:12px;">
@@ -255,19 +260,49 @@
 
   <main class="content">
     <section class="hero">
-      <div class="sub">信息与你无限 relink重塑未来<div>
+      <div class="sub">信息与你无限 relink重塑未来</div>
     </section>
     <section class="cards">
       <div class="card">活动 · 聚会</div>
-      <div class="card">班费 · 管理</div>
+      <div class="card">课表 · 课程</div>
       <!-- 替换为整块可点击的链接，跳转到 1.html -->
       <a class="card" href="1.html" role="button" aria-label="打开相册 回忆" style="text-decoration:none; color:inherit; display:block;">相册 · 回忆</a>
     </section>
 
+    <!-- 班级介绍：插入到卡片下面 -->
+    <section id="introduction" class="content">
+      <div class="card" style="text-align:left;">
+        <h2 style="margin-top:0;">班级介绍</h2>
+        <div id="introText">正在加载班级介绍...</div>
+      </div>
+    </section>
+
+    <script>
+      (function(){
+        const introEl = document.getElementById('introText');
+        if(!introEl) return;
+        function insertContent(text){
+          // 支持 HTML 字符串
+          introEl.innerHTML = text;
+          introEl.classList.add('fade-up');
+        }
+        if(window.CLASS_INTRO){
+          insertContent(window.CLASS_INTRO);
+        } else {
+          // 尝试动态加载脚本（若未预先注入）
+          const s = document.createElement('script');
+          s.src = 'res/introduction.js';
+          s.onload = function(){ if(window.CLASS_INTRO) insertContent(window.CLASS_INTRO); };
+          s.onerror = function(){ introEl.textContent = '班级介绍加载失败。'; };
+          document.body.appendChild(s);
+        }
+      })();
+    </script>
+
     <!-- 新增：开发者介绍（页面底部） -->
     <footer class="dev-footer" role="contentinfo">
-      <span class="name">不许人间见白头❤️OneThought</span>
-      <span class="meta"><img src="gitHub.png" alt="GitHub">本站由GitHub提供部署服务</span>
+      <span class="name">Powered by 不许人间见白头❤️OneThought</span>
+  <span class="meta"><img src="assests/github.svg" alt="GitHub" loading="lazy" onerror="this.onerror=null;this.src='assests/placeholder.svg';">本站由GitHub提供部署服务</span>
     </footer>
   </main>
 
@@ -332,9 +367,9 @@
     })();
   </script>
 
-  <!-- 新增：长按弹出框，图片文件 gitHub.png 放在同一目录 -->
+  <!-- 新增：长按弹出框，图片文件位于 `assests/` 目录 -->
   <div id="longpressPopup" class="longpress-popover" role="dialog" aria-hidden="true">
-    <img src="gitHub.png" alt="GitHub">
+    <img src="assests/github.svg" alt="GitHub" loading="lazy" onerror="this.onerror=null;this.src='assests/placeholder.svg';">
     <span class="text">不许人间见白头❤️OneThought</span>
   </div>
 
@@ -343,14 +378,19 @@
     (function () {
       const welcome = document.getElementById('welcome');
       if (!welcome) return;
+      let autoTimer = null;
       function hideWelcome() {
+        // 清除自动关闭计时器（若存在）
+        if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
         welcome.setAttribute('aria-hidden', 'true');
         try { welcome.parentNode && welcome.parentNode.removeChild(welcome); } catch (e) {}
       }
-      // 点击任意位置隐藏
-      welcome.addEventListener('click', hideWelcome);
-      // 按键也可用 Esc 隐藏
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideWelcome(); });
+      // 自动在 5 秒（5000ms）后关闭欢迎界面
+      autoTimer = setTimeout(hideWelcome, 5000);
+      // 点击任意位置隐藏（并取消自动计时）
+      welcome.addEventListener('click', () => { if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; } hideWelcome(); });
+      // 按键也可用 Esc 隐藏（并取消自动计时）
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; } hideWelcome(); } });
     })();
   </script>
 </body>

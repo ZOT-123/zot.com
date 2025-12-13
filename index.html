@@ -3,19 +3,79 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>2024级1班 班级网站</title>
+  <title>高2024级1班 官方网站</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
+
+  <!-- 新增：淡入/淡出动画与“你好”粗圆体样式 -->
+  <style>
+    /* loader 布局（覆盖整个屏幕） */
+    #loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 360ms ease, visibility 360ms ease;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    /* 显示状态：淡入 */
+    #loader.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      animation: loader-fade-in 480ms ease both;
+    }
+    @keyframes loader-fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 隐藏时使用淡出过渡（保持流畅） */
+    #loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* “你好” 字体：优先使用系统的圆体，并加粗 */
+    #loader .hi {
+      font-family: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 800;
+      font-size: 2.4rem;
+      line-height: 1;
+      -webkit-font-smoothing: antialiased;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    /* 次级文本样式，保持简单 */
+    #loader .sub {
+      color: #666;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    /* 小屏幕调整 */
+    @media (max-width: 480px) {
+      #loader .hi { font-size: 1.8rem; }
+    }
+  </style>
 </head>
 <body>
-  <div id="loader" class="loader" aria-hidden="false">
+  <div id="loader" class="loader show" aria-hidden="false">
     <div class="hi">你好</div>
     <div class="sub">欢迎来到 2024级1班网站</div>
     <div class="sub">点击屏幕跳过</div>
   </div>
 
   <header class="site-header">
-    <div class="brand">2024级1班</div>
+    <div class="brand">高2024级1班</div>
   </header>
 
   <main class="content">
@@ -28,5 +88,52 @@
       <div class="card">相册 · 回忆</div>
     </section>
   </main>
+
+  <!-- 新增：控制显示时长（5 秒）与点击跳过逻辑 -->
+  <script>
+    (function () {
+      const loader = document.getElementById('loader');
+      if (!loader) return;
+
+      // 5 秒后自动隐藏（5000ms）
+      const AUTO_HIDE_MS = 5000;
+      let hideTimeout = setTimeout(hideLoader, AUTO_HIDE_MS);
+
+      // 点击任意位置立即跳过
+      loader.addEventListener('click', () => {
+        clearTimeout(hideTimeout);
+        hideLoader();
+      });
+
+      // 隐藏函数：添加 hidden 类以触发淡出过渡，过渡结束后移除节点并更新 aria-hidden
+      function hideLoader() {
+        if (!loader.classList.contains('hidden')) {
+          loader.classList.add('hidden');
+          loader.classList.remove('show');
+          loader.setAttribute('aria-hidden', 'true');
+          // 在过渡结束后彻底从文档流中移除（避免屏蔽交互）
+          loader.addEventListener('transitionend', onTransitionEnd);
+        }
+      }
+
+      function onTransitionEnd(e) {
+        if (e.propertyName === 'opacity') {
+          // 删除节点或设置 display:none，保留以免影响调试
+          try { loader.parentNode && loader.parentNode.removeChild(loader); } catch (err) {}
+          loader.removeEventListener('transitionend', onTransitionEnd);
+        }
+      }
+
+      // 保证在 DOMContentLoaded 后如果脚本在 head 中执行仍然能显示
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          // 确保 show 类在初始时存在以触发淡入
+          loader.classList.add('show');
+        });
+      } else {
+        loader.classList.add('show');
+      }
+    })();
+  </script>
 </body>
 </html>

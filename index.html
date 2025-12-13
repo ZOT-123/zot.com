@@ -66,32 +66,6 @@
       padding-bottom: 56px; /* 为固定底部的页脚留出空间，避免遮挡内容 */
     }
 
-    /* 替换原来的文本样式：使用 SVG 描边动画（按笔画顺序） */
-    #loader .svg-wrap {
-      width: min(60vw, 420px);
-      max-width: 420px;
-      height: auto;
-      display: inline-block;
-    }
-    /* SVG 字形基础样式 */
-    #loader svg { display:block; width:100%; height:auto; }
-    #loader .glyph {
-      fill: transparent;
-      stroke: #111;
-      stroke-width: clamp(1px, 0.8vw, 4px);
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      vector-effect: non-scaling-stroke;
-      transition: stroke-dashoffset 700ms cubic-bezier(.22,.9,.37,1);
-    }
-    /* 当加上 .drawn 时从 dashoffset 到 0，完成描边 */
-    #loader .glyph.drawn { stroke-dashoffset: 0 !important; }
-    /* 描边完成后，填充淡入 */
-    #loader .glyph.filled {
-      transition: fill 260ms ease 80ms;
-      fill: #111;
-    }
-
     /* 其他 loader 次级文本 */
     #loader .sub {
       color: var(--muted);
@@ -220,6 +194,38 @@
     .dev-footer .name { font-weight: 600; display:block; margin-bottom:0.15rem; font-size:0.82rem; }
     .dev-footer .meta { color: var(--muted); font-size: 0.72rem; }
 
+    /* 新增：在 meta 文本前显示与字号相同的 GitHub 图标 */
+    .dev-footer .meta img {
+      height: 1em;        /* 与文本同高 */
+      width: auto;
+      vertical-align: -0.08em; /* 微调垂直位置 */
+      margin-right: 0.35ch;
+      display: inline-block;
+    }
+
+    /* 欢迎图片覆盖层（替换原 "你好" 文本为 hello.png） */
+    #welcome {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.95);
+      z-index: 9999;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #welcome img {
+      max-width: min(72vw, 420px);
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    @media (max-width: 480px) {
+      #welcome img { max-width: 84vw; }
+    }
+
     /* 小屏幕微调 */
     @media (max-width: 480px) {
       .content { padding: 0.75rem; }
@@ -231,23 +237,9 @@
   </style>
 </head>
 <body>
-  <div id="loader" class="loader show" aria-hidden="false">
-    <!-- 使用 SVG text（保留为 text 能用 getComputedTextLength）呈现“你 好”，JS 将按顺序描边 -->
-    <div class="svg-wrap" aria-hidden="true">
-      <svg viewBox="0 0 460 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="你好">
-        <!-- 调整 font-family 与 font-size，使用系统圆体 -->
-        <text id="glyph-ni" class="glyph" x="20" y="95"
-          font-family="Microsoft YaHei UI, Microsoft YaHei, PingFang SC, Helvetica Neue, Arial, sans-serif"
-          font-size="110" font-weight="800">你</text>
-
-        <text id="glyph-hao" class="glyph" x="240" y="95"
-          font-family="Microsoft YaHei UI, Microsoft YaHei, PingFang SC, Helvetica Neue, Arial, sans-serif"
-          font-size="110" font-weight="800">好</text>
-      </svg>
-    </div>
-
-    <div class="sub">欢迎来到 2024级1班网站</div>
-    <div class="sub">点击屏幕跳过</div>
+  <!-- 新增：欢迎图片覆盖层（点击任意处或图片关闭） -->
+  <div id="welcome" role="dialog" aria-label="欢迎" aria-hidden="false">
+    <img src="hello.png" alt="欢迎">
   </div>
 
   <header class="site-header">
@@ -274,125 +266,10 @@
 
     <!-- 新增：开发者介绍（页面底部） -->
     <footer class="dev-footer" role="contentinfo">
-      <span class="name">开发者：张三</span>
-      <span class="meta">前端开发 · Email: dev@example.com · GitHub: github.com/yourname</span>
+      <span class="name">不许人间见白头❤️OneThought</span>
+      <span class="meta"><img src="gitHub.png" alt="GitHub">本站由GitHub提供部署服务</span>
     </footer>
   </main>
-
-  <!-- 新增：控制显示时长（5 秒）与点击跳过逻辑 -->
-  <script>
-    (function () {
-      const loader = document.getElementById('loader');
-      if (!loader) return;
-
-      const AUTO_HIDE_MS = 5000;
-      let startTime = Date.now();
-      let hideTimer = null;
-
-      // 获取 glyph 元素（按需要的顺序放置）
-      const glyphs = [
-        document.getElementById('glyph-ni'),
-        document.getElementById('glyph-hao')
-      ].filter(Boolean);
-
-      // 初始化：为每个 glyph 计算长度并设置 dash 样式
-      function prepareGlyphs() {
-        glyphs.forEach(g => {
-          // 对于 <text> 元素，使用 getComputedTextLength 获取轮廓长度
-          const len = Math.max(1, Math.round(g.getComputedTextLength()));
-          // 立即应用内联样式以避免样式闪烁
-          g.style.strokeDasharray = len;
-          g.style.strokeDashoffset = len;
-          // 确保在样式表 transition 生效
-          g.style.transition = 'stroke-dashoffset 700ms cubic-bezier(.22,.9,.37,1)';
-          // 确保初始填充透明
-          g.style.fill = 'transparent';
-        });
-      }
-
-      // 按顺序触发描边与填充
-      function playStrokeSequence() {
-        const baseDelay = 300; // 初始延迟
-        const perGlyphDelay = 480; // 每字间隔（可调整）
-        glyphs.forEach((g, i) => {
-          const delay = baseDelay + perGlyphDelay * i;
-          setTimeout(() => {
-            // 触发描边动画
-            g.classList.add('drawn');
-            // 在描边结束后短暂延时再填充（使视觉更接近笔画完成）
-            setTimeout(() => {
-              g.classList.add('filled');
-            }, 700); // 与 transition 长度一致
-          }, delay);
-        });
-      }
-
-      // 隐藏 loader 的函数
-      function hideLoader() {
-        if (!loader) return;
-        if (!loader.classList.contains('hidden')) {
-          loader.classList.add('hidden');
-          loader.classList.remove('show');
-          loader.setAttribute('aria-hidden', 'true');
-          loader.addEventListener('transitionend', onTransitionEnd);
-        }
-      }
-      function onTransitionEnd(e) {
-        if (e.propertyName === 'opacity') {
-          try { loader.parentNode && loader.parentNode.removeChild(loader); } catch (err) {}
-          loader.removeEventListener('transitionend', onTransitionEnd);
-        }
-      }
-
-      // 基于真实时间调度隐藏（防止浏览器在后台节流 setTimeout 导致不准确）
-      function scheduleHide() {
-        clearTimeout(hideTimer);
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, AUTO_HIDE_MS - elapsed);
-        // 若已超时立即隐藏
-        if (remaining === 0) {
-          hideLoader();
-        } else {
-          hideTimer = setTimeout(hideLoader, remaining);
-        }
-      }
-
-      // 页面可见性变更时重算剩余时间，确保不同浏览器/标签（节流）下仍为真实 5 秒
-      document.addEventListener('visibilitychange', () => {
-        // 若页面变为可见，重新计算并安排隐藏
-        scheduleHide();
-      }, false);
-
-      // 点击 loader 任意位置立即跳过
-      loader.addEventListener('click', () => {
-        clearTimeout(hideTimer);
-        hideLoader();
-      });
-
-      // 初始化并启动
-      function init() {
-        // mark start time（如果需要可用 performance.now）
-        startTime = Date.now();
-        // 确保 show 类存在以触发入场样式
-        loader.classList.add('show');
-
-        // 等待一帧以确保 SVG 已布局好，再准备 glyph（防止 getComputedTextLength 返回 0）
-        requestAnimationFrame(() => {
-          prepareGlyphs();
-          playStrokeSequence();
-        });
-
-        scheduleHide();
-      }
-
-      // 在 DOMContentLoaded 后初始化（若脚本位于 body 底部也会直接执行）
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-      } else {
-        init();
-      }
-    })();
-  </script>
 
   <!-- 新增：根字体缩放脚本 — 根据视口线性调整 rem，保证整体随分辨率自适应 -->
   <script>
@@ -460,5 +337,21 @@
     <img src="gitHub.png" alt="GitHub">
     <span class="text">不许人间见白头❤️OneThought</span>
   </div>
+
+  <!-- 新增：关闭欢迎图片的脚本 -->
+  <script>
+    (function () {
+      const welcome = document.getElementById('welcome');
+      if (!welcome) return;
+      function hideWelcome() {
+        welcome.setAttribute('aria-hidden', 'true');
+        try { welcome.parentNode && welcome.parentNode.removeChild(welcome); } catch (e) {}
+      }
+      // 点击任意位置隐藏
+      welcome.addEventListener('click', hideWelcome);
+      // 按键也可用 Esc 隐藏
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideWelcome(); });
+    })();
+  </script>
 </body>
 </html>

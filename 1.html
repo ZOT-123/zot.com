@@ -401,6 +401,12 @@
       <button id="previmg" class="floatbtn">&lt;</button>
       <button id="nextimg" class="floatbtn">&gt;</button>
     </div>
+
+    <!-- 新增：返回主页按钮与上传按钮与隐藏文件输入 -->
+    <button class="floatbtn" id="backToHome" style="top:20px; left:90px;">🏠</button>
+    <button class="floatbtn" id="uploadBtn" style="top:80px; left:20px;">⬆</button>
+    <input id="uploadInput" type="file" accept="image/*" multiple style="display:none">
+
     <button class="floatbtn" id="treebtn">&gt;</button>
     <button class="floatbtn" id="sidebtn">+</button>
     <button class="scrollbtn" id="toend"></button>
@@ -1292,6 +1298,146 @@
         )
           naviZoom(e);
       });
+    </script>
+
+    <!-- 新增：保存上传图片到 IndexedDB 并插入当前视图 的脚本 -->
+    <script>
+      (function () {
+        const DB_NAME = 'savedPhotosDB';
+        const STORE = 'photos';
+        const DB_VER = 1;
+        let savedDb = null;
+
+        function openSavedDB() {
+          return new Promise((resolve, reject) => {
+            if (savedDb) return resolve(savedDb);
+            const req = indexedDB.open(DB_NAME, DB_VER);
+            req.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains(STORE)) {
+                db.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+              }
+            };
+            req.onsuccess = (e) => {
+              savedDb = e.target.result;
+              resolve(savedDb);
+            };
+            req.onerror = (e) => reject(e.target.error);
+          });
+        }
+
+        async function addSavedPhoto(blob, name) {
+          const db = await openSavedDB();
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE, 'readwrite');
+            const store = tx.objectStore(STORE);
+            const item = { blob, name, ts: Date.now() };
+            const rq = store.add(item);
+            rq.onsuccess = () => resolve(rq.result);
+            rq.onerror = () => reject(rq.error);
+          });
+        }
+
+        async function getAllSavedPhotos() {
+          const db = await openSavedDB();
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE, 'readonly');
+            const store = tx.objectStore(STORE);
+            const rq = store.getAll();
+            rq.onsuccess = () => resolve(rq.result);
+            rq.onerror = () => reject(rq.error);
+          });
+        }
+
+        // 将一个 Blob/File 作为图片插入当前瀑布流（复用 existing 的布局方式）
+        function insertImageBlobToView(blob, filename) {
+          // 确保 reflow 初始化列
+          if (!imgcols || imgcols.length === 0) reflow();
+
+          const img = new Image();
+          img.onload = () => {
+            const wrap = document.createElement('div');
+            wrap.className = 'wrap';
+            img.index = ++showcount.value; // 给新图一个递增显示索引
+            img.alt = filename || 'upload';
+            img.path = 'saved/' + (Date.now()) + '/' + filename;
+            wrap.appendChild(img);
+
+            // 按当前布局插入
+            if (flextype === 'colflex') {
+              // 选择最短列插入
+              let minColEl = imgcols.reduce((prev, curr) => prev.offsetHeight <= curr.offsetHeight ? prev : curr);
+              minColEl.appendChild(wrap);
+            } else {
+              resize(wrap);
+              imgbox.appendChild(wrap);
+            }
+
+            // observe & bookkeeping（与原逻辑保持一致）
+            imgObs.observe(wrap);
+            wrap.id = 'img' + showcount.value;
+            wrap.index = showcount.value;
+            showcount.innerText = showcount.value;
+          };
+          img.src = URL.createObjectURL(blob);
+          img.addEventListener('load', () => {
+            // 释放临时 URL 在 img 加载后
+            URL.revokeObjectURL(img.src);
+          });
+        }
+
+        // DOM 元素
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadInput = document.getElementById('uploadInput');
+        const backToHome = document.getElementById('backToHome');
+
+        // 返回主页
+        if (backToHome) backToHome.addEventListener('click', () => (location.href = 'index.html'));
+
+        // 打开文件选择
+        if (uploadBtn && uploadInput) {
+          uploadBtn.addEventListener('click', () => uploadInput.click());
+
+          uploadInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            // 保存每个文件到 IndexedDB 并插入视图
+            try {
+              await openSavedDB();
+              for (const f of files) {
+                // 仅处理图片类型
+                if (!f.type || !f.type.startsWith('image')) continue;
+                await addSavedPhoto(f, f.name);
+                insertImageBlobToView(f, f.name);
+              }
+              // 清空输入以便下次选相同文件仍触发 change
+              uploadInput.value = '';
+              // 简单提示
+              try { navigator.vibrate && navigator.vibrate(50); } catch (e) {}
+              alert('图片已保存并添加到相册视图（保存在浏览器本地）');
+            } catch (err) {
+              console.error('保存图片失败', err);
+              alert('保存失败（请检查浏览器是否支持 IndexedDB）');
+            }
+          });
+        }
+
+        // 可选：在页面加载时将已保存图片载入视图（如果需要，取消注释以下代码）
+        /*
+        (async function loadSavedOnStart(){
+          try{
+            const items = await getAllSavedPhotos();
+            if(items && items.length){
+              for(const it of items){
+                insertImageBlobToView(it.blob, it.name);
+              }
+            }
+          }catch(e){
+            console.warn('载入已保存图片失败', e);
+          }
+        })();
+        */
+      })();
     </script>
   </body>
 </html>

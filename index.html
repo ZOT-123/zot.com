@@ -43,27 +43,101 @@
       pointer-events: none;
     }
 
-    /* “你好” 字体：优先使用系统的圆体，并加粗 */
+    /* 全局变量与容器 */
+    :root {
+      --max-content-width: 1100px;
+      --gap: 1rem;
+      --brand-color: #111;
+      --muted: #666;
+    }
+
+    html {
+      /* 默认 font-size 将被脚本按视口调整（提供回退） */
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      color: var(--brand-color);
+      background: #fafafa;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* “你好” 字体：使用响应式单位（rem / clamp），优先圆体并加粗 */
     #loader .hi {
       font-family: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
       font-weight: 800;
-      font-size: 2.4rem;
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
       line-height: 1;
-      -webkit-font-smoothing: antialiased;
       text-align: center;
-      margin-bottom: 8px;
+      margin-bottom: 0.5rem;
     }
 
     /* 次级文本样式，保持简单 */
     #loader .sub {
-      color: #666;
-      font-size: 0.95rem;
+      color: var(--muted);
+      font-size: clamp(0.85rem, 1.6vw, 1rem);
       text-align: center;
     }
 
-    /* 小屏幕调整 */
+    /* 布局：最大宽度容器并水平居中 */
+    .content {
+      max-width: var(--max-content-width);
+      margin: 0 auto;
+      padding: calc(var(--gap) * 1.25);
+    }
+
+    /* header */
+    .site-header {
+      display: flex;
+      align-items: center;
+      height: clamp(56px, 8vh, 84px);
+      padding: 0 calc(var(--gap) * 1.25);
+      background: #fff;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+    }
+
+    /* hero 区块：文本自适应换行 */
+    .hero {
+      padding: calc(var(--gap) * 2) 0;
+    }
+    .hero .sub {
+      font-size: clamp(1rem, 2.6vw, 1.25rem);
+      line-height: 1.4;
+      max-width: 90ch;
+    }
+
+    /* cards 使用响应式网格：最小列宽 160px，自动扩展 */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      padding: calc(var(--gap) * 1);
+    }
+    .card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(17,17,17,0.04);
+      text-align: center;
+      font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+    }
+
+    /* 小屏幕微调 */
     @media (max-width: 480px) {
-      #loader .hi { font-size: 1.8rem; }
+      .content { padding: 0.75rem; }
+      .cards { gap: 0.6rem; }
+      .card { padding: 0.9rem; }
+      #loader .hi { font-size: clamp(1.6rem, 7vw, 2.2rem); }
     }
   </style>
 </head>
@@ -133,6 +207,22 @@
       } else {
         loader.classList.add('show');
       }
+    })();
+  </script>
+
+  <!-- 新增：根字体缩放脚本 — 根据视口线性调整 rem，保证整体随分辨率自适应 -->
+  <script>
+    (function () {
+      const minW = 320, maxW = 1440; // 参考区间
+      const minFont = 13, maxFont = 18; // px
+      function updateRootFont() {
+        const w = Math.max(minW, Math.min(maxW, window.innerWidth));
+        const t = (w - minW) / (maxW - minW);
+        const size = minFont + (maxFont - minFont) * t;
+        document.documentElement.style.fontSize = size + 'px';
+      }
+      updateRootFont();
+      window.addEventListener('resize', updateRootFont, { passive: true });
     })();
   </script>
 </body>

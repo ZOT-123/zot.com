@@ -63,23 +63,41 @@
       background: #fafafa;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
+      padding-bottom: 56px; /* 为固定底部的页脚留出空间，避免遮挡内容 */
     }
 
-    /* “你好” 字体：使用响应式单位（rem / clamp），优先圆体并加粗 */
-    #loader .hi {
-      font-family: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
-      font-weight: 800;
-      font-size: clamp(1.8rem, 5vw, 2.6rem);
-      line-height: 1;
-      text-align: center;
-      margin-bottom: 0.5rem;
+    /* 替换原来的文本样式：使用 SVG 描边动画（按笔画顺序） */
+    #loader .svg-wrap {
+      width: min(60vw, 420px);
+      max-width: 420px;
+      height: auto;
+      display: inline-block;
+    }
+    /* SVG 字形基础样式 */
+    #loader svg { display:block; width:100%; height:auto; }
+    #loader .glyph {
+      fill: transparent;
+      stroke: #111;
+      stroke-width: clamp(1px, 0.8vw, 4px);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+      transition: stroke-dashoffset 700ms cubic-bezier(.22,.9,.37,1);
+    }
+    /* 当加上 .drawn 时从 dashoffset 到 0，完成描边 */
+    #loader .glyph.drawn { stroke-dashoffset: 0 !important; }
+    /* 描边完成后，填充淡入 */
+    #loader .glyph.filled {
+      transition: fill 260ms ease 80ms;
+      fill: #111;
     }
 
-    /* 次级文本样式，保持简单 */
+    /* 其他 loader 次级文本 */
     #loader .sub {
       color: var(--muted);
       font-size: clamp(0.85rem, 1.6vw, 1rem);
       text-align: center;
+      margin-top: 0.5rem;
     }
 
     /* 布局：最大宽度容器并水平居中 */
@@ -132,24 +150,115 @@
       font-size: clamp(0.95rem, 1.6vw, 1.05rem);
     }
 
+    /* 刷新按钮样式（放在 header 右侧，响应式） */
+    .refresh-btn {
+      appearance: none;
+      border: none;
+      background: #f3f4f6;
+      color: #111;
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .refresh-btn:hover { transform: translateY(-1px); }
+    .refresh-btn:active { transform: translateY(0); }
+
+    /* 长按弹出框（居中小提示，图片与文字垂直居中） */
+    .longpress-popover {
+      position: fixed;
+      left: 50%;
+      top: 20%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.98);
+      color: #111;
+      padding: 0.6rem 0.9rem;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 1rem;
+      z-index: 10010;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    .longpress-popover.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .longpress-popover img {
+      height: 1em; /* 与字体等高 */
+      width: auto;
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0;
+    }
+    .longpress-popover .text { line-height:1; }
+
+    /* 调整：将开发者页脚固定在屏幕底部并缩小字体 */
+    .dev-footer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: 0;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.02); /* 轻微背景，视设计可调整 */
+      color: #444;
+      font-size: 0.78rem; /* 缩小字体 */
+      text-align: center;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      z-index: 9998;
+    }
+    .dev-footer .name { font-weight: 600; display:block; margin-bottom:0.15rem; font-size:0.82rem; }
+    .dev-footer .meta { color: var(--muted); font-size: 0.72rem; }
+
     /* 小屏幕微调 */
     @media (max-width: 480px) {
       .content { padding: 0.75rem; }
       .cards { gap: 0.6rem; }
       .card { padding: 0.9rem; }
       #loader .hi { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+      .refresh-btn { padding: 0.35rem 0.5rem; font-size: 0.85rem; }
     }
   </style>
 </head>
 <body>
   <div id="loader" class="loader show" aria-hidden="false">
-    <div class="hi">你好</div>
+    <!-- 使用 SVG text（保留为 text 能用 getComputedTextLength）呈现“你 好”，JS 将按顺序描边 -->
+    <div class="svg-wrap" aria-hidden="true">
+      <svg viewBox="0 0 460 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="你好">
+        <!-- 调整 font-family 与 font-size，使用系统圆体 -->
+        <text id="glyph-ni" class="glyph" x="20" y="95"
+          font-family="Microsoft YaHei UI, Microsoft YaHei, PingFang SC, Helvetica Neue, Arial, sans-serif"
+          font-size="110" font-weight="800">你</text>
+
+        <text id="glyph-hao" class="glyph" x="240" y="95"
+          font-family="Microsoft YaHei UI, Microsoft YaHei, PingFang SC, Helvetica Neue, Arial, sans-serif"
+          font-size="110" font-weight="800">好</text>
+      </svg>
+    </div>
+
     <div class="sub">欢迎来到 2024级1班网站</div>
     <div class="sub">点击屏幕跳过</div>
   </div>
 
   <header class="site-header">
     <div class="brand">高2024级1班</div>
+
+    <!-- 新增：刷新按钮（放在 header 右侧） -->
+    <div style="margin-left:auto; padding-right:12px;">
+      <button id="refreshBtn" class="refresh-btn" title="刷新页面">
+        ↻ 刷新
+      </button>
+    </div>
   </header>
 
   <main class="content">
@@ -159,8 +268,15 @@
     <section class="cards">
       <div class="card">活动 · 聚会</div>
       <div class="card">班费 · 管理</div>
-      <div class="card">相册 · 回忆</div>
+      <!-- 替换为整块可点击的链接，跳转到 1.html -->
+      <a class="card" href="1.html" role="button" aria-label="打开相册 回忆" style="text-decoration:none; color:inherit; display:block;">相册 · 回忆</a>
     </section>
+
+    <!-- 新增：开发者介绍（页面底部） -->
+    <footer class="dev-footer" role="contentinfo">
+      <span class="name">开发者：张三</span>
+      <span class="meta">前端开发 · Email: dev@example.com · GitHub: github.com/yourname</span>
+    </footer>
   </main>
 
   <!-- 新增：控制显示时长（5 秒）与点击跳过逻辑 -->
@@ -169,43 +285,111 @@
       const loader = document.getElementById('loader');
       if (!loader) return;
 
-      // 5 秒后自动隐藏（5000ms）
       const AUTO_HIDE_MS = 5000;
-      let hideTimeout = setTimeout(hideLoader, AUTO_HIDE_MS);
+      let startTime = Date.now();
+      let hideTimer = null;
 
-      // 点击任意位置立即跳过
-      loader.addEventListener('click', () => {
-        clearTimeout(hideTimeout);
-        hideLoader();
-      });
+      // 获取 glyph 元素（按需要的顺序放置）
+      const glyphs = [
+        document.getElementById('glyph-ni'),
+        document.getElementById('glyph-hao')
+      ].filter(Boolean);
 
-      // 隐藏函数：添加 hidden 类以触发淡出过渡，过渡结束后移除节点并更新 aria-hidden
+      // 初始化：为每个 glyph 计算长度并设置 dash 样式
+      function prepareGlyphs() {
+        glyphs.forEach(g => {
+          // 对于 <text> 元素，使用 getComputedTextLength 获取轮廓长度
+          const len = Math.max(1, Math.round(g.getComputedTextLength()));
+          // 立即应用内联样式以避免样式闪烁
+          g.style.strokeDasharray = len;
+          g.style.strokeDashoffset = len;
+          // 确保在样式表 transition 生效
+          g.style.transition = 'stroke-dashoffset 700ms cubic-bezier(.22,.9,.37,1)';
+          // 确保初始填充透明
+          g.style.fill = 'transparent';
+        });
+      }
+
+      // 按顺序触发描边与填充
+      function playStrokeSequence() {
+        const baseDelay = 300; // 初始延迟
+        const perGlyphDelay = 480; // 每字间隔（可调整）
+        glyphs.forEach((g, i) => {
+          const delay = baseDelay + perGlyphDelay * i;
+          setTimeout(() => {
+            // 触发描边动画
+            g.classList.add('drawn');
+            // 在描边结束后短暂延时再填充（使视觉更接近笔画完成）
+            setTimeout(() => {
+              g.classList.add('filled');
+            }, 700); // 与 transition 长度一致
+          }, delay);
+        });
+      }
+
+      // 隐藏 loader 的函数
       function hideLoader() {
+        if (!loader) return;
         if (!loader.classList.contains('hidden')) {
           loader.classList.add('hidden');
           loader.classList.remove('show');
           loader.setAttribute('aria-hidden', 'true');
-          // 在过渡结束后彻底从文档流中移除（避免屏蔽交互）
           loader.addEventListener('transitionend', onTransitionEnd);
         }
       }
-
       function onTransitionEnd(e) {
         if (e.propertyName === 'opacity') {
-          // 删除节点或设置 display:none，保留以免影响调试
           try { loader.parentNode && loader.parentNode.removeChild(loader); } catch (err) {}
           loader.removeEventListener('transitionend', onTransitionEnd);
         }
       }
 
-      // 保证在 DOMContentLoaded 后如果脚本在 head 中执行仍然能显示
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          // 确保 show 类在初始时存在以触发淡入
-          loader.classList.add('show');
-        });
-      } else {
+      // 基于真实时间调度隐藏（防止浏览器在后台节流 setTimeout 导致不准确）
+      function scheduleHide() {
+        clearTimeout(hideTimer);
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, AUTO_HIDE_MS - elapsed);
+        // 若已超时立即隐藏
+        if (remaining === 0) {
+          hideLoader();
+        } else {
+          hideTimer = setTimeout(hideLoader, remaining);
+        }
+      }
+
+      // 页面可见性变更时重算剩余时间，确保不同浏览器/标签（节流）下仍为真实 5 秒
+      document.addEventListener('visibilitychange', () => {
+        // 若页面变为可见，重新计算并安排隐藏
+        scheduleHide();
+      }, false);
+
+      // 点击 loader 任意位置立即跳过
+      loader.addEventListener('click', () => {
+        clearTimeout(hideTimer);
+        hideLoader();
+      });
+
+      // 初始化并启动
+      function init() {
+        // mark start time（如果需要可用 performance.now）
+        startTime = Date.now();
+        // 确保 show 类存在以触发入场样式
         loader.classList.add('show');
+
+        // 等待一帧以确保 SVG 已布局好，再准备 glyph（防止 getComputedTextLength 返回 0）
+        requestAnimationFrame(() => {
+          prepareGlyphs();
+          playStrokeSequence();
+        });
+
+        scheduleHide();
+      }
+
+      // 在 DOMContentLoaded 后初始化（若脚本位于 body 底部也会直接执行）
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
       }
     })();
   </script>
@@ -225,5 +409,56 @@
       window.addEventListener('resize', updateRootFont, { passive: true });
     })();
   </script>
+
+  <!-- 新增：刷新按钮行为脚本（修改长按逻辑，替换 alert） -->
+  <script>
+    (function(){
+      const btn = document.getElementById('refreshBtn');
+      const popup = document.getElementById('longpressPopup');
+      if (!btn) return;
+      // 单击刷新
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
+        setTimeout(() => btn.disabled = false, 1200);
+        location.reload();
+      });
+
+      // 长按显示弹出框（按住 700ms）
+      let pressTimer = null;
+      let popupTimer = null;
+      function showPopup() {
+        if (!popup) return;
+        popup.classList.add('show');
+        popup.setAttribute('aria-hidden', 'false');
+        // 自动隐藏（例如 2500ms）
+        popupTimer = setTimeout(hidePopup, 2500);
+      }
+      function hidePopup() {
+        if (!popup) return;
+        popup.classList.remove('show');
+        popup.setAttribute('aria-hidden', 'true');
+        if (popupTimer) { clearTimeout(popupTimer); popupTimer = null; }
+      }
+
+      btn.addEventListener('pointerdown', () => {
+        pressTimer = setTimeout(() => {
+          showPopup();
+        }, 700);
+      });
+      ['pointerup','pointerleave','pointercancel'].forEach(evt => {
+        btn.addEventListener(evt, () => {
+          if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+          // 若弹窗正在显示则隐藏
+          hidePopup();
+        });
+      });
+    })();
+  </script>
+
+  <!-- 新增：长按弹出框，图片文件 gitHub.png 放在同一目录 -->
+  <div id="longpressPopup" class="longpress-popover" role="dialog" aria-hidden="true">
+    <img src="gitHub.png" alt="GitHub">
+    <span class="text">不许人间见白头❤️OneThought</span>
+  </div>
 </body>
 </html>

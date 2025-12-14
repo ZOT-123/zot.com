@@ -49,6 +49,9 @@
       --gap: 1rem;
       --brand-color: #111;
       --muted: #666;
+      /* 与 styles.css 保持一致的彩虹变量（内联以确保优先可用） */
+      --rainbow-main: linear-gradient(135deg, rgba(255,75,75,1) 0%, rgba(255,144,104,1) 15%, rgba(255,210,0,1) 30%, rgba(58,213,159,1) 50%, rgba(58,162,255,1) 70%, rgba(122,73,255,1) 85%);
+      --rainbow-soft: linear-gradient(135deg, rgba(255,75,75,0.12) 0%, rgba(255,144,104,0.10) 15%, rgba(255,210,0,0.10) 30%, rgba(58,213,159,0.10) 50%, rgba(58,162,255,0.10) 70%, rgba(122,73,255,0.10) 85%);
     }
 
     html {
@@ -219,8 +222,8 @@
       inset: 0;
       display: grid;
       place-items: center;
-      /* 纯白不透明背景，保证加载界面为白底 */
-      background: #ffffff;
+      /* 彩虹主题的柔和叠层背景以替代纯白 */
+      background: linear-gradient(rgba(255,255,255,0.96), rgba(255,255,255,0.9)), var(--rainbow-main);
       z-index: 9999;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
@@ -335,6 +338,15 @@
       .gallery-modal .g-image { max-height: calc(68vh - 80px); border-radius:6px; }
       .gallery-modal .g-prev, .gallery-modal .g-next { width:36px; height:36px; }
     }
+
+    /* 新增：连笔/行书类文本样式 */
+    .cursive-large {
+      font-family: 'KaiTi', cursive, sans-serif; /* 使用楷体或其他连笔字体 */
+      font-size: clamp(1.2rem, 4vw, 1.5rem); /* 增大字号 */
+      line-height: 1.4; /* 增大行高以增强连笔效果 */
+      display: inline-block;
+      overflow-wrap: break-word; /* 防止长词溢出 */
+    }
   </style>
 </head>
 <body>
@@ -361,10 +373,10 @@
       </button>
     </div>
   </header>
-
+v>
   <main class="content">
     <section class="hero">
-      <div class="sub">信息与你无限 relink重塑未来</div>
+      <div class="sub cursive-large">爱国利民 因时应事 整齐严肃 德达材实</div>
     </section>
     <section class="cards">
       <div class="card">活动 · 聚会</div>
@@ -643,4 +655,121 @@
 
       async function openAt(idx = 0) {
         await renderThumbs();
-        if
+        if (!items || items.length === 0) return;
+        current = (idx + items.length) % items.length;
+        const it = items[current];
+        const u = urlCache.get(it.id) || URL.createObjectURL(it.blob);
+        urlCache.set(it.id, u);
+        imgEl.src = u;
+        imgEl.alt = it.name || ('图片 ' + (current + 1));
+        caption.textContent = (current + 1) + ' / ' + items.length + (it.name ? ' · ' + it.name : '');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('open');
+        // 强制重绘以启用 CSS 动画
+        void modal.offsetWidth;
+        modal.classList.add('fade-in');
+        // 自动播放间隔（例如 4 秒）
+        let autoTimer = setInterval(() => {
+          btnNext.click();
+        }, 4000);
+        // 清理函数
+        function cleanup() {
+          clearInterval(autoTimer);
+          modal.classList.remove('fade-in');
+          // 退出时重置所有状态
+          setTimeout(() => {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            imgEl.src = '';
+            caption.textContent = '';
+            // 清除 URL 缓存
+            revokeAllUrls();
+          }, 220);
+        }
+        // 关闭按钮
+        btnClose.onclick = cleanup;
+        // 上一张/下一张
+        btnPrev.onclick = () => { showImageByIndex(current - 1); };
+        btnNext.onclick = () => { showImageByIndex(current + 1); };
+        // 点击空白处关闭
+        modal.onclick = (e) => {
+          if (e.target === modal) {
+            cleanup();
+          }
+        };
+        // 键盘导航
+        document.addEventListener('keydown', keydownHandler);
+        function keydownHandler(e) {
+          if (modal.classList.contains('open')) {
+            if (e.key === 'ArrowLeft') {
+              e.preventDefault();
+              btnPrev.click();
+            } else if (e.key === 'ArrowRight') {
+              e.preventDefault();
+              btnNext.click();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              cleanup();
+            }
+          }
+        }
+        // 清理函数在对话框关闭时调用
+        modal.addEventListener('animationend', (e) => {
+          if (e.target === modal && !modal.classList.contains('open')) {
+            cleanup();
+          }
+        });
+        // 预览第一张
+        showImageByIndex(current);
+      }
+
+      // 初始化：打开画廊按钮
+      openBtn.addEventListener('click', async () => {
+        await renderThumbs();
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('open');
+        // 强制重绘以启用 CSS 动画
+        void modal.offsetWidth;
+        modal.classList.add('fade-in');
+        // 预览第一张
+        if (items.length > 0) {
+          showImageByIndex(0);
+        }
+      })();
+
+      // 上传图片
+      uploadBtn.addEventListener('click', async () => {
+        if (uploadInput.files.length === 0) return;
+        await addFiles(uploadInput.files);
+        uploadInput.value = ''; // 清空文件输入
+        renderThumbs();
+      });
+
+      // 拖放上传区域
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('hover');
+      });
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('hover');
+      });
+      dropzone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('hover');
+        if (e.dataTransfer.files.length > 0) {
+          await addFiles(e.dataTransfer.files);
+          renderThumbs();
+        }
+      });
+
+      // 清空相册
+      clearAllBtn.addEventListener('click', async () => {
+        if (confirm('确定要清空相册吗？')) {
+          await clearAll();
+          renderThumbs();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

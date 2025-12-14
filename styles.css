@@ -9,8 +9,16 @@ html,body{height:100%}
 body{
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   color: #1e293b; /* 深灰色文本 */
-  /* 使用壁纸图片作为背景，并在上方叠加半透明渐变以保证文字对比 */
-  background: linear-gradient(120deg, rgba(248,250,252,0.65), rgba(226,232,240,0.65)), url('assests/wall.svg') center/cover no-repeat;
+  /* 彩虹主题：宽广渐变作为主页背景（兼容深色/浅色文字对比） */
+  background:
+    linear-gradient(135deg,
+      rgba(255,75,75,0.95) 0%,
+      rgba(255,144,104,0.92) 15%,
+      rgba(255,210,0,0.92) 30%,
+      rgba(58,213,159,0.92) 50%,
+      rgba(58,162,255,0.92) 70%,
+      rgba(122,73,255,0.92) 85%
+    );
   /* 允许页面滚动，模态打开时脚本会临时设置 body.style.overflow='hidden' */
   overflow: auto;
   -webkit-font-smoothing:antialiased;
@@ -20,8 +28,9 @@ body{
 body::before{
   content:"";
   position:fixed;inset:0;z-index:0;
-  background: radial-gradient(600px at 10% 20%, rgba(37,99,235,0.08), transparent 10%),
-              radial-gradient(500px at 90% 80%, rgba(16,185,129,0.06), transparent 15%);
+  /* 保持轻微光斑叠加以增加层次（与彩虹渐变搭配） */
+  background: radial-gradient(600px at 10% 20%, rgba(255,255,255,0.06), transparent 10%),
+              radial-gradient(500px at 90% 80%, rgba(255,255,255,0.04), transparent 15%);
   pointer-events:none;
   animation: moveBg 12s linear infinite;
 }
@@ -62,7 +71,7 @@ body.loaded .loader{
 }
 
 /* 主内容在加载后淡入 */
-.content{position:relative;z-index:10;padding:120px 40px 40px 40px;min-height:100vh;opacity:0;transform:translateY(8px);transition:opacity .9s ease .15s, transform .9s ease .15s}
+.content{position:relative;z-index:10;padding:120px 40px 40px 40px;min-height:auto;opacity:0;transform:translateY(8px);transition:opacity .9s ease .15s, transform .9s ease .15s}
 body.loaded .content{opacity:1;transform:none}
 
 /* 站点头部（左上角主标题） */
@@ -74,7 +83,7 @@ body.loaded .content{opacity:1;transform:none}
 }
 
 /* 主内容 */
-.content{position:relative;z-index:10;padding:120px 40px 40px 40px;min-height:100vh}
+.content{position:relative;z-index:10;padding:120px 40px 40px 40px;min-height:auto}
 .hero h1{font-size:clamp(28px,6vw,48px);margin-bottom:12px}
 .hero p{color:rgba(30,41,59,0.9);max-width:720px}
 
@@ -85,6 +94,19 @@ body.loaded .content{opacity:1;transform:none}
 .card:nth-child(2){animation-delay:.75s}
 .card:nth-child(3){animation-delay:.9s}
 @keyframes card-in{to{transform:none;opacity:1}}
+
+/* Gallery 上传区样式（上传按钮与拖放） */
+.g-upload{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 12px}
+.g-upload #galleryInput{display:none}
+.g-upload .upload-btn{
+  appearance:none;border:none;padding:8px 12px;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;
+  box-shadow:0 6px 18px rgba(37,99,235,0.12);
+}
+.g-upload .dropzone{
+  width:100%;max-width:920px;border:2px dashed rgba(255,255,255,0.12);padding:14px;border-radius:10px;color:rgba(255,255,255,0.9);
+  text-align:center;background:rgba(255,255,255,0.03);cursor:pointer;
+}
+.g-upload .dropzone.dragover{border-color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.04)}
 
 /* 兼容减少动画偏好 */
 @media (prefers-reduced-motion: reduce){
@@ -100,3 +122,10 @@ body.loaded .content{opacity:1;transform:none}
 .card, .refresh-btn, .floatbtn{transition:transform .18s ease, box-shadow .18s ease}
 .card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(2,6,23,0.12)}
 .refresh-btn:active, .floatbtn:active{transform:translateY(0) scale(.98)}
+
+/* 欢迎层图片居中调整（修复 hello.png 未居中问题） */
+#welcome { display:grid; place-items:center; }
+/* 将 picture 作为块级、限制最大宽度以便在不同屏幕上居中显示 */
+#welcome picture { display:block; width:min(84vw,420px); max-width:92%; }
+/* img 在容器内自适应并水平居中，避免因为 width:100% 导致视觉偏移 */
+#welcome img { display:block; width:100%; height:auto; margin:0 auto; object-fit:contain; }

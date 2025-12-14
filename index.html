@@ -350,40 +350,69 @@
   </style>
 </head>
 <body>
-  <!-- 新增：欢迎图片覆盖层（点击任意处或图片关闭） -->
-  <div id="welcome" role="dialog" aria-label="欢迎" aria-hidden="false">
-    <picture>
-      <!-- 优先尝试 PNG（如果用户上传了 hello.png） -->
-      <source srcset="assests/hello.png" type="image/png">
-      <!-- 回退到 SVG -->
-      <source srcset="assests/hello.svg" type="image/svg+xml">
-      <!-- 最终兜底：占位图 -->
-      <img src="assests/hello.png" alt="欢迎" loading="lazy"
-           onerror="this.onerror=null;this.src='assests/placeholder.svg';">
-    </picture>
+  <!-- 新增：页面加载覆盖 loader（script.js 会处理其移除） -->
+  <div id="loader" class="loader" role="status" aria-hidden="false">
+    <div class="hi">你好</div>
+    <div class="sub">页面正在加载…</div>
   </div>
-
-  <header class="site-header">
-    <div class="brand">高2024级1班 官方网站</div>
-
-    <!-- 新增：刷新按钮（放在 header 右侧） -->
+   <!-- 欢迎图片覆盖层：初始使用 hello.svg（更可靠），脚本会尝试切换到 hello.png（若存在） -->
+   <div id="welcome" role="dialog" aria-label="欢迎" aria-hidden="false">
+     <picture>
+       <source srcset="assests/hello.png" type="image/png">
+       <source srcset="assests/hello.svg" type="image/svg+xml">
+       <!-- 初始指向 SVG，避免请求不存在的 PNG 导致显示异常 -->
+       <img id="welcomeImg" src="assests/hello.svg" alt="欢迎" loading="eager"
+            decoding="async"
+            onerror="this.onerror=null;this.src='assests/placeholder.svg';">
+     </picture>
+   </div>
++
++  <!-- 优雅检测并切换到 hello.png（若存在），否则保持 SVG；若 SVG 也不可用则回退到 placeholder -->
++  <script>
++    (function () {
++      const img = document.getElementById('welcomeImg');
++      if (!img) return;
++      const png = 'assests/hello.png';
++      const svg = img.src;
++      const placeholder = 'assests/placeholder.svg';
++
++      // 尝试加载 PNG
++      const probe = new Image();
++      probe.onload = function () {
++        // PNG 可用，切换
++        img.src = png;
++      };
++      probe.onerror = function () {
++        // PNG 不可用，确保 SVG 可用，否则回退到占位图
++        const checkSvg = new Image();
++        checkSvg.onload = function () { /* svg 可用，保持不变 */ };
++        checkSvg.onerror = function () { img.src = placeholder; };
++        checkSvg.src = svg;
++      };
++      probe.src = png;
++    })();
++  </script>
+ 
+   <header class="site-header">
+     <div class="brand">高2024级1班 官方网站</div>
+ 
+     <!-- 新增：刷新按钮（放在 header 右侧） -->
     <div style="margin-left:auto; padding-right:12px;">
-      <button id="refreshBtn" class="refresh-btn" title="刷新页面">
-        ↻ 刷新
-      </button>
-    </div>
-  </header>
-v>
-  <main class="content">
-    <section class="hero">
-      <div class="sub cursive-large">爱国利民 因时应事 整齐严肃 德达材实</div>
-    </section>
-    <section class="cards">
-      <div class="card">活动 · 聚会</div>
-      <div class="card">课表 · 课程</div>
-      <!-- 替换为打开内置画廊（防止跳转） -->
-      <a id="openGalleryBtn" class="card" href="1.html" role="button" aria-label="打开相册 回忆" style="text-decoration:none; color:inherit; display:block;">相册 · 回忆</a>
-    </section>
+       <button id="refreshBtn" class="refresh-btn" title="刷新页面">
+         ↻ 刷新
+       </button>
+     </div>
+   </header>
+   <main class="content">
+     <section class="hero">
+       <div class="sub cursive-large">爱国利民 因时应事 整齐严肃 德达材实</div>
+     </section>
+     <section class="cards">
+       <div class="card">活动 · 聚会</div>
+       <div class="card">课表 · 课程</div>
+      <!-- 替换为打开内置画廊（防止跳转；1.html 也可作为独立相册页面） -->
+      <a id="openGalleryBtn" class="card" href="#" role="button" aria-label="打开相册 回忆" style="text-decoration:none; color:inherit; display:block;">相册 · 回忆</a>
+     </section>
 
     <!-- 班级介绍：插入到卡片下面 -->
     <section id="introduction" class="content">
@@ -737,39 +766,40 @@ v>
         }
       })();
 
-      // 上传图片
-      uploadBtn.addEventListener('click', async () => {
-        if (uploadInput.files.length === 0) return;
-        await addFiles(uploadInput.files);
-        uploadInput.value = ''; // 清空文件输入
-        renderThumbs();
+      // 上传图片：点击打开文件选择，change 事件处理批量文件
+      uploadBtn.addEventListener('click', () => uploadInput.click());
+      uploadInput.addEventListener('change', async (e) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        await addFiles(e.target.files);
+        uploadInput.value = '';
+        await renderThumbs();
       });
-
-      // 拖放上传区域
+ 
+      // 拖放上传区域（使用与样式一致的 "dragover" 类）
       dropzone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropzone.classList.add('hover');
+        dropzone.classList.add('dragover');
       });
       dropzone.addEventListener('dragleave', () => {
-        dropzone.classList.remove('hover');
+        dropzone.classList.remove('dragover');
       });
       dropzone.addEventListener('drop', async (e) => {
         e.preventDefault();
-        dropzone.classList.remove('hover');
-        if (e.dataTransfer.files.length > 0) {
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
           await addFiles(e.dataTransfer.files);
-          renderThumbs();
+          await renderThumbs();
         }
       });
-
-      // 清空相册
-      clearAllBtn.addEventListener('click', async () => {
-        if (confirm('确定要清空相册吗？')) {
-          await clearAll();
-          renderThumbs();
-        }
-      });
-    })();
-  </script>
-</body>
-</html>
+ 
+       // 清空相册
+       clearAllBtn.addEventListener('click', async () => {
+         if (confirm('确定要清空相册吗？')) {
+           await clearAll();
+           renderThumbs();
+         }
+       });
+     })();
+   </script>
+ </body>
+ </html>

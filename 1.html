@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>相册 · 回忆</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* 独立相册页局部样式，复用全局 styles.css，添加简洁网格 */
+    .album-wrap { max-width:1100px;margin:20px auto;padding:16px; }
+    .album-controls { display:flex;gap:8px;align-items:center;margin-bottom:12px; }
+    .thumb-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
+    .thumb { position:relative; border-radius:8px; overflow:hidden; background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    .thumb img{ width:100%; height:140px; object-fit:cover; display:block; }
+    .thumb .meta { padding:8px; font-size:12px; color:#222; display:flex; justify-content:space-between; gap:8px; align-items:center; }
+    .thumb button{ background:transparent;border:none;color:#e11d48; cursor:pointer; }
+    a.back { display:inline-block;margin-bottom:8px;color:#111;text-decoration:none;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.85);box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+  </style>
+</head>
+<body>
+  <div class="album-wrap">
+    <a class="back" href="index.html">← 返回首页</a>
+    <h1>相册 · 回忆</h1>
+    <div class="album-controls">
+      <input id="inputFiles" type="file" accept="image/*" multiple style="display:none">
+      <button id="btnUpload" class="upload-btn">上传照片</button>
+      <button id="btnClear">清空相册</button>
+      <span id="status" style="margin-left:auto;color:#555;font-size:13px"></span>
+    </div>
+    <div id="grid" class="thumb-grid" aria-live="polite"></div>
+  </div>
+
+  <script>
+    (function(){
+      const DB_NAME = 'gallery-db', STORE = 'images';
+      function openDB(){ return new Promise((res,rej)=>{ const r = indexedDB.open(DB_NAME,1); r.onupgradeneeded = e => { const db = e.target.result; if(!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE,{keyPath:'id',autoIncrement:true}); }; r.onsuccess = e=>res(e.target.result); r.onerror = e=>rej(e.target.error); }); }
+      async function addFiles(files){
+        if(!files || files.length===0) return;
+        const db = await openDB();
+        const tx = db.transaction(STORE,'readwrite'); const store = tx.objectStore(STORE);
+        for(const f of files) store.add({ blob: f, name: f.name, type: f.type, time: Date.now() });
+        return new Promise((res,rej)=>{ tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error); });
+      }
+      async function getAll(){ const db = await openDB(); const tx = db.transaction(STORE,'readonly'); const req = tx.objectStore(STORE).getAll(); return new Promise((res,rej)=>{ req.onsuccess = e=>res(e.target.result); req.onerror = e=>rej(e.target.error); }); }
+      async function deleteById(id){ const db = await openDB(); const tx = db.transaction(STORE,'readwrite'); tx.objectStore(STORE).delete(id); return new Promise((res,rej)=>{ tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+      async function clearAll(){ const db = await openDB(); const tx = db.transaction(STORE,'readwrite'); tx.objectStore(STORE).clear(); return new Promise((res,rej)=>{ tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+
+      const inputFiles = document.getElementById('inputFiles'), btnUpload = document.getElementById('btnUpload'), btnClear = document.getElementById('btnClear'), grid = document.getElementById('grid'), status = document.getElementById('status');
+
+      btnUpload.addEventListener('click', ()=> inputFiles.click());
+      inputFiles.addEventListener('change', async (e)=> { if(e.target.files && e.target.files.length){ status.textContent='上传中...'; await addFiles(e.target.files); inputFiles.value=''; await render(); status.textContent=''; } });
+
+      btnClear.addEventListener('click', async ()=>{ if(confirm('清空相册？')){ await clearAll(); await render(); }});
+
+      async function render(){
+        grid.innerHTML = '';
+        const items = await getAll();
+        if(items.length===0){ grid.innerHTML = '<div style="padding:24px;color:#666">暂无图片，点击“上传照片”开始添加。</div>'; return; }
+        for(const it of items){
+          const u = URL.createObjectURL(it.blob);
+          const div = document.createElement('div'); div.className='thumb';
+          div.innerHTML = '<img src="'+u+'" alt="'+(it.name||'图片')+'"><div class="meta"><span>'+ (it.name||'') +'</span><span><button data-id="'+it.id+'">删除</button> <a download="'+(it.name||'image.jpg')+'" href="'+u+'" style="color:#0369a1;text-decoration:none;margin-left:8px">下载</a></span></div>';
+          grid.appendChild(div);
+          div.querySelector('button').addEventListener('click', async (e)=>{ if(confirm('删除该图片？')){ await deleteById(it.id); URL.revokeObjectURL(u); await render(); }});
+        }
+      }
+
+      render().catch(()=>{ grid.innerHTML='<div style="padding:24px;color:#a00">加载相册失败，请查看浏览器控制台。</div>'; });
+    })();
+  </script>
+</body>
+</html>

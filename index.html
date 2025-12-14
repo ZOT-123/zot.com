@@ -60,8 +60,10 @@
       margin: 0;
       font-family: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
       color: var(--brand-color);
-      /* 使用 wall.png 作为首页背景，带回退颜色并确保图片覆盖并居中 */
-      background: #fafafa url('assests/wall.png') center top / cover no-repeat;
+      /* 使用 wall.png 作为首页背景，并在图片上叠加 50% 不透明度的白色遮罩 */
+      background:
+        linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+        url('assests/wall.png') center top / cover no-repeat;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
       padding-bottom: 56px; /* 为固定底部的页脚留出空间，避免遮挡内容 */

@@ -333,7 +333,15 @@
 <body>
   <!-- 新增：欢迎图片覆盖层（点击任意处或图片关闭） -->
   <div id="welcome" role="dialog" aria-label="欢迎" aria-hidden="false">
-    <img src="assests/hello.svg" alt="欢迎" loading="lazy" onerror="this.onerror=null;this.src='assests/placeholder.svg';">
+    <picture>
+      <!-- 优先尝试 PNG（如果用户上传了 hello.png） -->
+      <source srcset="assests/hello.png" type="image/png">
+      <!-- 回退到 SVG -->
+      <source srcset="assests/hello.svg" type="image/svg+xml">
+      <!-- 最终兜底：占位图 -->
+      <img src="assests/hello.png" alt="欢迎" loading="lazy"
+           onerror="this.onerror=null;this.src='assests/placeholder.svg';">
+    </picture>
   </div>
 
   <header class="site-header">

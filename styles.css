@@ -11,7 +11,8 @@ body{
   color: #1e293b; /* 深灰色文本 */
   /* 使用壁纸图片作为背景，并在上方叠加半透明渐变以保证文字对比 */
   background: linear-gradient(120deg, rgba(248,250,252,0.65), rgba(226,232,240,0.65)), url('assests/wall.svg') center/cover no-repeat;
-  overflow:hidden;
+  /* 允许页面滚动，模态打开时脚本会临时设置 body.style.overflow='hidden' */
+  overflow: auto;
   -webkit-font-smoothing:antialiased;
 }
 

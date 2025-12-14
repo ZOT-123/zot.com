@@ -240,3 +240,67 @@ body.loaded .content{opacity:1;transform:none}
   /* 保证在彩虹/背景上可读，增加微妙的描边阴影 */
   text-shadow: 0 1px 0 rgba(255,255,255,0.28), 0 2px 8px rgba(0,0,0,0.08);
 }
+
+/* 横屏与超宽屏适配：避免内容被横向拉伸或布局错位 */
+@media (orientation: landscape) {
+  /* 阻止横向滚动（视觉修复） */
+  html, body { overflow-x: hidden; }
+
+  /* 缩减主内容上下内边距，给横向更多可用空间 */
+  .content {
+    padding: 48px 20px;
+    max-width: calc(var(--max-content-width) * 1.15);
+  }
+
+  /* 顶部条在横屏下居中并限制宽度，避免左侧固定导致遮挡 */
+  .site-header {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(96%, var(--max-content-width));
+    border-radius: 10px;
+    padding: 0.4rem calc(var(--gap) * 1);
+  }
+  .brand { font-size: clamp(0.95rem, 2vw, 1.1rem); }
+
+  /* 英雄区压缩垂直占用，连笔文本略放大以保持视觉重心 */
+  .hero { padding: 1rem 0; }
+  .cursive-large { font-size: clamp(1.4rem, 5vw, 2.4rem); line-height:1.06; }
+
+  /* 使用网格让卡片在横屏更均匀分布，防止单行过长 */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: start;
+    padding: calc(var(--gap) * 0.75);
+  }
+  .card { padding: 16px; }
+
+  /* 欢迎图片限制宽度，避免横向过宽 */
+  #welcome picture { width: min(60vw, 520px); }
+  #welcome img { max-width: 100%; height: auto; }
+
+  /* 模态在横屏适配更大宽度 */
+  .gallery-modal .g-view { width: min(92vw, 1200px); max-height: 82vh; }
+  .gallery-modal .g-image { max-height: calc(82vh - 120px); }
+
+  /* 使加载覆盖层在横屏更紧凑 */
+  .loader .hi { font-size: clamp(32px, 12vw, 160px); }
+  .loader .sub { font-size: clamp(0.9rem, 1.8vw, 1rem); }
+}
+
+/* 超宽屏进一步限制内容宽度与卡片密度，避免线性拉伸 */
+@media (min-width: 1400px) {
+  .content { max-width: 1400px; padding-left: 36px; padding-right: 36px; }
+  .cards { grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 1.25rem; }
+  .card { padding: 20px; border-radius: 12px; }
+  .brand { font-size: clamp(1.05rem, 1.6vw, 1.6rem); }
+}
+
+/* 极窄高度（例如横屏手机）进一步压缩 header 与间距 */
+@media (max-height: 420px) and (orientation: landscape) {
+  .site-header { top: 8px; padding: 0 0.6rem; height: clamp(44px, 6vh, 56px); }
+  .content { padding-top: 48px; }
+  .card { padding: 12px; font-size: 0.95rem; }
+}

@@ -9,16 +9,10 @@ html,body{height:100%}
 body{
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   color: #1e293b; /* 深灰色文本 */
-  /* 彩虹主题：宽广渐变作为主页背景（兼容深色/浅色文字对比） */
+  /* 以 wall.png 为底图，并在上方叠加 50% 白色遮罩以降低饱和度，保证文字对比 */
   background:
-    linear-gradient(135deg,
-      rgba(255,75,75,0.95) 0%,
-      rgba(255,144,104,0.92) 15%,
-      rgba(255,210,0,0.92) 30%,
-      rgba(58,213,159,0.92) 50%,
-      rgba(58,162,255,0.92) 70%,
-      rgba(122,73,255,0.92) 85%
-    );
+    linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+    url('assests/wall.png') center top / cover no-repeat;
   /* 允许页面滚动，模态打开时脚本会临时设置 body.style.overflow='hidden' */
   overflow: auto;
   -webkit-font-smoothing:antialiased;
@@ -78,7 +72,16 @@ body.loaded .content{opacity:1;transform:none}
 .site-header{position:fixed;top:18px;left:18px;z-index:50}
 .brand{
   font-weight:700;font-size:20px;color:rgba(30,41,59,0.95); /* 深灰色标题 */
-  padding:8px 12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.3)); /* 浅色背景 */
+  padding:8px 12px;border-radius:10px;
+  /* 顶部白条使用柔和的彩虹渐变（低不透明度）以体现主题色但不影响可读性 */
+  background: linear-gradient(90deg,
+    rgba(255,75,75,0.12) 0%,
+    rgba(255,144,104,0.12) 20%,
+    rgba(255,210,0,0.10) 40%,
+    rgba(58,213,159,0.10) 60%,
+    rgba(58,162,255,0.10) 80%,
+    rgba(122,73,255,0.10) 100%
+  );
   backdrop-filter: blur(6px);box-shadow:0 6px 18px rgba(2,6,23,0.15);
 }
 
